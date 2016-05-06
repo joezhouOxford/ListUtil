@@ -3,7 +3,7 @@
  */
 
 var sourceListTitle="Importtest5";
-var targetListTitleList="ImportTest1";
+var targetListTitleList="ImportTest1,ImportTest2";
 var sourceFieldInternalNameList="Datum,Geschatte_x0020_BMI";
 
 
@@ -20,65 +20,9 @@ var sourceList=oList.getByTitle(sourceListTitle);
 //read source list field XML
  // Getting All Fields From the List
 var oFields=sourceList.get_fields();
-function cloneFields(sourceFieldInternalNameArray,j){
-    var promise=cloneField(sourceFieldInternalNameArray,j);
-    jQuery.when(promise).then(function(index){
-        console.log("current index "+index);
-        var nexti=index+1;
-        if(nexti < sourceFieldInternalNameArray.length)
-        {
-            console.log("nexti index "+nexti);
-            cloneFields(sourceFieldInternalNameArray,nexti);
-        }
-        else
-        {
-            console.log("all fields clone completed");
-        }
-
-    });
-}
-function cloneField(sourceFieldInternalNameArray,j){
-    this.dfd = jQuery.Deferred();
-    this.sourceField=oFields.getByInternalNameOrTitle(sourceFieldInternalNameArray[j]);
-    this.j=j;
-    clientContext.load(sourceField);
-    clientContext.executeQueryAsync(Function.createDelegate(this, this.onGetFieldSuccess),Function.createDelegate(this, this.onFail));
-    return dfd.promise();
-}
-function onFail(errormsg,msg,status){
-    console.error(errormsg);
-    console.error(msg);
-    console.error(status);
-
-}
-function onGetFieldSuccess(){
-    var sourceFieldXML=this.sourceField.get_schemaXml();
-    var targetListTitleArray=targetListTitleList.split(',');
-    console.log(sourceFieldXML);
-    for (var i = 0; i < targetListTitleArray.length; i++) {
-        this.currentIndex=i;
-        addListFieldBySchemaXML(targetListTitleArray[i],sourceFieldXML);
-    }
-
-}
-
-function addListFieldBySchemaXML(targetListTitle,schemaXML)
-{
-
-    var targetList=oList.getByTitle(targetListTitle);
-    console.log("for list " +targetListTitle);
-    var fieldValue = targetList.get_fields().addFieldAsXml(schemaXML, false, SP.AddFieldOptions.addToNoContentType);
-    fieldValue.update();
-    clientContext.load(fieldValue );
-    clientContext.executeQueryAsync(Function.createDelegate(this, this.OnaddListFieldSuccess),Function.createDelegate(this, this.onFail));
-}
-function OnaddListFieldSuccess()
-{
-    console.log("add field success");
-    this.dfd.resolve(this.j);
-}
 
 var sourceFieldInternalNameArray=sourceFieldInternalNameList.split(',');
+var targetListTitleArray=targetListTitleList.split(',');
 
 
 // Anonymous "self-invoking" function
@@ -101,9 +45,77 @@ var sourceFieldInternalNameArray=sourceFieldInternalNameList.split(',');
 
     // Start polling...
     checkReady(function(jQuery) {
-        cloneFields(sourceFieldInternalNameArray,0);
+        cloneFields(sourceFieldInternalNameArray,0,targetListTitleArray,0);
     });
 })();
+
+function cloneFields(sourceFieldInternalNameArray,j,targetListTitleArray,k){
+    var promise=clone1FieldFor1List(sourceFieldInternalNameArray,j,targetListTitleArray,k);
+    jQuery.when(promise).then(function(fieldIndex,listIndex){
+        console.log("current listIndex "+listIndex);
+        var nextlistIndex=listIndex+1;
+        if(nextlistIndex<targetListTitleArray.length)
+        {
+            console.log("nextlist index "+nextlistIndex);
+            var nextlistIndex=listIndex+1;
+            cloneFields(sourceFieldInternalNameArray,j,targetListTitleArray,nextlistIndex);
+        }
+        else{
+            console.log("column "+sourceFieldInternalNameArray[j]+" has been inserted to all lists, go next field");
+            var nextfieldIndex=fieldIndex+1;
+            console.log("current field index "+fieldIndex);
+            if(nextfieldIndex<sourceFieldInternalNameArray.length)
+            {
+                console.log("nextfield index "+nextfieldIndex);
+            cloneFields(sourceFieldInternalNameArray,nextfieldIndex,nextfieldIndex,targetListTitleArray,0);
+            }
+            else
+            {
+                console.log("all fields clone to all lists completed");
+            }
+        }
+    });
+}
+function clone1FieldFor1List(sourceFieldInternalNameArray, j,targetListTitleArray,k){
+    this.dfd = jQuery.Deferred();
+    this.sourceField=oFields.getByInternalNameOrTitle(sourceFieldInternalNameArray[j]);
+    this.targetListTitle=targetListTitleArray[k];
+    this.j=j;
+    this.k=k;
+    clientContext.load(sourceField);
+    clientContext.executeQueryAsync(Function.createDelegate(this, this.onGetFieldSuccess),Function.createDelegate(this, this.onFail));
+    return dfd.promise();
+}
+function onFail(errormsg,msg,status){
+    console.error(errormsg);
+    console.error(msg);
+    console.error(status);
+
+}
+function onGetFieldSuccess(){
+    var sourceFieldXML=this.sourceField.get_schemaXml();
+    console.log(sourceFieldXML);
+    addListFieldBySchemaXML(this.targetListTitle,sourceFieldXML);
+
+}
+
+function addListFieldBySchemaXML(targetListTitle,schemaXML)
+{
+
+    var targetList=oList.getByTitle(targetListTitle);
+    console.log("for list " +targetListTitle);
+    var fieldValue = targetList.get_fields().addFieldAsXml(schemaXML, false, SP.AddFieldOptions.addToNoContentType);
+    fieldValue.update();
+    clientContext.load(fieldValue );
+    clientContext.executeQueryAsync(Function.createDelegate(this, this.OnaddListFieldSuccess),Function.createDelegate(this, this.onFail));
+}
+function OnaddListFieldSuccess()
+{
+    console.log("add field success");
+    this.dfd.resolve(this.j,this.k);
+}
+
+
 
 
 
