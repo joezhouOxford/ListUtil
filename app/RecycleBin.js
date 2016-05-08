@@ -2,21 +2,12 @@
  * Created by zhou on 07/05/2016.
  */
 var noOfRecrodToRestore=5000;
-function runCode() {
-        this.clientContext = new SP.ClientContext.get_current();
-
-        var site = clientContext.get_site();
-        this.recycleItemCollection = site.get_recycleBin();
-
-        clientContext.load(this.recycleItemCollection);
-        clientContext.executeQueryAsync(Function.createDelegate(this, this.onQuerySucceeded(this.recycleItemCollection)), Function.createDelegate(this, this.onQueryFailed));
 
 
-}
-
-function onQuerySucceeded(recycleItemCollection) {
-    if (recycleItemCollection.get_count() > 0) {
-        processNextRecord(recycleItemCollection,0);
+function onQuerySucceeded() {
+    if (this.recycleItemCollection.get_count() > 0) {
+        console.log("has recycle item");
+        processNextRecord(this.recycleItemCollection,0);
 
     }
     else {
@@ -35,7 +26,7 @@ function processNextRecord(recycleItemCollection,nextIndex)
     }).done(function(){
         console.log("retore item done");
         nextIndex++;
-        if(nextIndex<noOfRecrodToRestore)
+        if(nextIndex<noOfRecrodToRestore&&nextIndex<recycleItemCollection.get_count())
             processNextRecord(recycleItemCollection,nextIndex);
     }).fail(promiseFail);
 
@@ -45,7 +36,7 @@ function processNextRecord(recycleItemCollection,nextIndex)
 function addAudit(item){
     var dfd=jQuery.Deferred();
     //add audit trial
-    setTimeout(function(){dfd.resolve();},30);
+    setTimeout(function(){dfd.resolve();},300);
     return dfd.promise();
 
 }
@@ -53,7 +44,7 @@ function restoreItem(item){
     var dfd=jQuery.Deferred();
     //retore item
     setTimeout(function(){dfd.resolve();},30);
-    return thisDefer.promise();
+    return dfd.promise();
 
 }
 function promiseFail(error){
@@ -62,3 +53,37 @@ function promiseFail(error){
 function onQueryFailed(sender, args) {
     alert('Request failed. ' + args.get_message() + '\n' + args.get_stackTrace());
 }
+function runCode() {
+    this.clientContext = new SP.ClientContext.get_current();
+
+    var site = clientContext.get_site();
+    this.recycleItemCollection = site.get_recycleBin();
+
+    clientContext.load(this.recycleItemCollection);
+    clientContext.executeQueryAsync(Function.createDelegate(this, this.onQuerySucceeded()), Function.createDelegate(this, this.onQueryFailed));
+
+
+}
+// Anonymous "self-invoking" function
+(function() {
+    // Load the script
+    var script = document.createElement("SCRIPT");
+    script.src = 'https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js';
+    script.type = 'text/javascript';
+    document.getElementsByTagName("head")[0].appendChild(script);
+
+    // Poll for jQuery to come into existance
+    var checkReady = function(callback) {
+        if (window.jQuery) {
+            callback(jQuery);
+        }
+        else {
+            window.setTimeout(function() { checkReady(callback); }, 100);
+        }
+    };
+
+    // Start polling...
+    checkReady(function(jQuery) {
+        runCode();
+    });
+})();

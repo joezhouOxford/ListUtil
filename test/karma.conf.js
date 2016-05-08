@@ -19,13 +19,13 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
-    'bower_components/jasmine/lib/jasmine-core/jasmine.js',
-      'bower_components/jasmine/lib/jasmine-core/jasmine-html.js',
-      'bower_components/jasmine/lib/jasmine-core/boot.js',
-      'bower_components/jquery/dist/jquery.js"',
+    '../bower_components/jasmine/lib/jasmine-core/jasmine.js',
+      '../bower_components/jasmine/lib/jasmine-core/jasmine-html.js',
+      '../bower_components/jasmine/lib/jasmine-core/boot.js',
+      '../bower_components/jquery/dist/jquery.js"',
 
-      'app/RecycleBin.js',
-      'test/spec/**/*.js'
+      '../app/RecycleBin.js',
+      '../test/spec/**/*.js'
     ],
 
     // list of files / patterns to exclude
