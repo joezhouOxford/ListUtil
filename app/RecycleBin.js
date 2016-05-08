@@ -3,11 +3,14 @@
  */
 var noOfRecrodToRestore=5000;
 
-
-function onQuerySucceeded() {
-    if (this.recycleItemCollection.get_count() > 0) {
+function onQuerySucceeded()
+{
+    loopThroughRecycleItems(this.recycleItemCollection);
+}
+function loopThroughRecycleItems(recycleItemCollection) {
+    if (recycleItemCollection.get_count() > 0) {
         console.log("has recycle item");
-        processNextRecord(this.recycleItemCollection,0);
+        processNextRecord(recycleItemCollection,0);
 
     }
     else {
@@ -60,7 +63,7 @@ function runCode() {
     this.recycleItemCollection = site.get_recycleBin();
 
     clientContext.load(this.recycleItemCollection);
-    clientContext.executeQueryAsync(Function.createDelegate(this, this.onQuerySucceeded()), Function.createDelegate(this, this.onQueryFailed));
+    clientContext.executeQueryAsync(Function.createDelegate(this, this.onQuerySucceeded), Function.createDelegate(this, this.onQueryFailed));
 
 
 }

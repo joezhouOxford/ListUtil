@@ -14,7 +14,7 @@
 
       it('should restore the recycle items', function () {
         console.log = jasmine.createSpy("log");
-        var gotRecycleItems = onQuerySucceeded(recycleItemCollection);
+        var gotRecycleItems = loopThroughRecycleItems(recycleItemCollection);
         expect(console.log).toHaveBeenCalledWith("Title: ;Item ID: 1");
 
       });
