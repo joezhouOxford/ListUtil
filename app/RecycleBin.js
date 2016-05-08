@@ -1,8 +1,9 @@
 /**
  * Created by zhou on 07/05/2016.
  */
-var noOfRecrodToRestore=5000;
-
+var noOfRecrodToRestore=1;
+this.live=true;
+this.itemState=1;
 function onQuerySucceeded()
 {
     loopThroughRecycleItems(this.recycleItemCollection);
@@ -19,34 +20,54 @@ function loopThroughRecycleItems(recycleItemCollection) {
 }
 function processNextRecord(recycleItemCollection,nextIndex)
 {
+  if(nextIndex<noOfRecrodToRestore&&nextIndex<recycleItemCollection.get_count()){
     this.item = recycleItemCollection.itemAt(nextIndex);
     var id = item.get_id();
     var title = item.get_title();
+    var itemState=item.get_itemState();
     console.log('Title: ' + title + ';' + 'Item ID: ' + id);
-    jQuery.when(addAudit(item)).done(function(){
-        console.log("audit done");
-        return restoreItem(item);
-    }).done(function(){
-        console.log("retore item done");
-        nextIndex++;
-        if(nextIndex<noOfRecrodToRestore&&nextIndex<recycleItemCollection.get_count())
-            processNextRecord(recycleItemCollection,nextIndex);
-    }).fail(promiseFail);
+      if(itemState==1)
+    {
+        jQuery.when(addAudit(item)).done(function(){
+            console.log("audit done");
+            return restoreItem(item);
+        }).done(function(){
+            console.log("retore item done");
+            processNextRecord(recycleItemCollection,nextIndex+1);
+        }).fail(promiseFail);
+    }
+    else{
+            processNextRecord(recycleItemCollection,nextIndex+1);
+    }
 
+ }
 
 
 }
 function addAudit(item){
     var dfd=jQuery.Deferred();
     //add audit trial
-    setTimeout(function(){dfd.resolve();},300);
+    setTimeout(function(){dfd.resolve();},30);
     return dfd.promise();
 
 }
+
 function restoreItem(item){
     var dfd=jQuery.Deferred();
     //retore item
-    setTimeout(function(){dfd.resolve();},30);
+
+    if(this.live)
+    {
+        item.restore();
+        var itemContext=item.get_context();
+        itemContext.load(item);
+        itemContext.executeQueryAsync(function(){dfd.resolve();},onQueryFailed);
+    }
+    else
+    {
+        setTimeout(function(){dfd.resolve();},30);
+    }
+
     return dfd.promise();
 
 }
