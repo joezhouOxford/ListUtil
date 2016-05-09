@@ -108,6 +108,6 @@ function runCode() {
 
     // Start polling...
     checkReady(function(jQuery) {
-        runCode();
+        //runCode();
     });
 })();

@@ -9,6 +9,7 @@
         var item={};
         item.get_id=function(){return 1};
         item.get_title=function(){return ""};
+          item.get_itemState=function(){return ""};
         return item;
       };
 
